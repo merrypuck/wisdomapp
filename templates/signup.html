@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+ 
+{% block content %}
+    {% for message in get_flashed_messages() %}
+      <div class="flash">{{ message }}</div>
+    {% endfor %}
+  <h2>SignUp</h2>
+  <form action="{{ url_for('signup') }}" method=post>
+
+    {{ form.hidden_tag() }}
+ 
+    {% for message in form.firstName.errors %}
+    <div class="flash">{{ message }}</div>
+    {% endfor %}
+
+    {{ form.firstName.label }}
+    {{ form.firstName }}
+
+    {% for message in form.lastName.errors %}
+    <div class="flash">{{ message }}</div>
+    {% endfor %}
+
+    {{ form.lastName.label }}
+    {{ form.lastName }}
+
+    {% for message in form.email.errors %}
+    <div class="flash">{{ message }}</div>
+    {% endfor %}
+
+    {{ form.email.label }}
+    {{ form.email }}
+
+    {% for message in form.username.errors %}
+    <div class="flash">{{ message }}</div>
+    {% endfor %}
+
+    {{ form.username.label }}
+    {{ form.username }}
+
+    {% for message in form.password.errors %}
+    <div class="flash">{{ message }}</div>
+    {% endfor %}
+    {{ form.password.label }}
+    {{ form.password }}
+    
+    {{ form.submit }}
+  </form>
+  {% endblock %} 

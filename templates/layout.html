@@ -1,0 +1,33 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/wisdom.css') }}">
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" ></script>
+  <script src='https://swww.tokbox.com/webrtc/v2.0/js/TB.min.js'></script>
+
+  </head>
+  <body>
+    <nav>
+      <ul>
+        <a href="{{ url_for('home') }}"><li id='logo'>Wisdom.ly</li></a>
+        <a><li>Register for a Roundtable</li></a>
+        <a href='/roundtable'><li>View Roundtable</li></a>
+        <a><li id='tutorial'>Tutorial</li></a>
+        <a href='/signup'><li id='account'>My Account</li></a>
+        <a><li id='navbutton'>
+            <img src='nav-icon.png' />
+      </li></a>
+      </ul>
+    </nav>  
+    <div id='content'>
+
+      {% block content %}
+      {% endblock %}
+
+    </div>
+  </body>
+
+</html>
+
+

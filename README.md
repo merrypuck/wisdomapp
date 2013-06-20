@@ -1,4 +1,1 @@
-wisdomapp
-=========
-
-Be wise.
+# Wisdom.ly

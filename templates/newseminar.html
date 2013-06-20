@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+ 
+{% block content %}
+    {% for message in get_flashed_messages() %}
+      <div class="flash">{{ message }}</div>
+    {% endfor %}
+  <h2>Create a new Seminar</h2>
+  <form action="{{ url_for('newseminar') }}" method=post>
+
+    {{ form.hidden_tag() }}
+ 
+    {% for message in form.seminarName.errors %}
+    <div class="flash">{{ message }</div>
+    {% endfor %}
+
+    {{ form.seminarName.label }}
+    {{ form.seminarName }}
+
+    {% for message in form.attendeeAmt.erro2rs %}
+    <div class="flash">{{ message }}</div>
+    {% endfor %}
+
+    {{ form.attendeeAmt.label }}
+    {{ form.attendeeAmt }}
+
+    {{ form.sessionTopic1.label }}
+    {{ form.sessionTopic1 }}
+    {{ form.sessionTopic2.label }}
+    {{ form.sessionTopic2 }}
+    {{ form.sessionTopic3.label }}
+    {{ form.sessionTopic3 }}
+    {{ form.sessionTopic4.label }}
+    {{ form.sessionTopic4 }}
+    {{ form.sessionTopic5.label }}
+    {{ form.sessionTopic5 }}
+
+    {{ form.submit }}
+  </form>
+  {% endblock %} 
