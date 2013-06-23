@@ -1,9 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
-{% for info in userData %}
     <h2>My Profile<h2>
-    <h3>This is {{info['username']}} profile page<h3>
+    <h3>This is {{userData['_id']}}'s profile page<h3>
   </div>
 
-{% endfor %}
 {% endblock %}
