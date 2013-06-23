@@ -10,7 +10,7 @@
     {{ form.hidden_tag() }}
  
     {% for message in form.seminarName.errors %}
-    <div class="flash">{{ message }</div>
+    <div class="flash">{{ message {}}</div>
     {% endfor %}
 
     {{ form.seminarName.label }}
@@ -35,5 +35,23 @@
     {{ form.sessionTopic5 }}
 
     {{ form.submit }}
+
+
+  {{javascript}}
+    1a. Expert fills out form to schedule roundtable
+    1b. We generate a session and create entry in db
+    1c. Make roundtable available in list of roundtable.
+    2a. User signs up for rt
+    2b. generate token for session, user, update db
+    2c. roundtable updated on site, on user profile
+    3a. Roundtable is scheduled to start
+    3b. We let users join and activate links. Verify user is registered or has to log in. Auto generate links 
+    3c. Roundtable becomes live, users can join.
+
+    general landing page
+    waiting room
+    live roundtable
+
+    
   </form>
   {% endblock %} 

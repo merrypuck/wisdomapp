@@ -19,9 +19,16 @@ from flask.ext.mail import Message, Mail
 # handles password hashing
 from flaskext.bcrypt import Bcrypt
 
+# handles user login management
+from flask.ext.login import LoginManager
+
 # python + mongo
 import pymongo 
 from pymongo import MongoClient
+
+#openTok
+import OpenTokSDK
+
 #--------------------------------------------------------------------------
 app = Flask(__name__)
 
@@ -34,6 +41,11 @@ users_collection = client.wisdom.users
 #initiate password hashing
 bcrypt = Bcrypt(app)
 
+#initiate opentok and define api_key
+api_key = "32153182"
+api_secret = "6274a324e6e616d13fd0623c4ba051aa2ce79ba9"
+opentok_sdk = OpenTokSDK.OpenTokSDK(api_key, api_secret)
+
 # key for POST security
 app.secret_key = "dylan"
 
@@ -45,29 +57,35 @@ app.config["MAIL_USE_SSL"] = True
 app.config["MAIL_USERNAME"] = 'aaron@wisdom.ly'
 app.config["MAIL_PASSWORD"] = 'lastmorning123'
 mail.init_app(app)
-
 #----------------------------------
     # userAuth
     # function for user authentication
     # accepts user id, password as parameters
     # and returns userData if successfull
 #----------------------------------
+def newSession():
+    session_address = None
+    session_properties = {
+    OpenTokSDK.SessionProperties.p2p_preference: "disabled"
+    }
+    session = opentok_sdk.create_session(session_address, session_properties)
+    return session
+def newToken(session):
+    token = opentok_sdk.generate_token(session.session_id)
+    return token
 
 def userAuth(user, password):
     if re.match("[^@]+@[^@]+\.[^@]+", user):
-        if users_collection.find({'email': user}).limit(1).count() == 1:
-            userData = users_collection.find({'email':user})
-            for field in userData:
-                if bcrypt.check_password_hash(field['password'], password):
-                    return userData
+        if users_collection.find_one({'email': user}) != None:
+            userData = users_collection.find_one({'email':user})
+            if bcrypt.check_password_hash(userData['password'], password):
+                return userData
 
     elif user.__len__() > 0:
-        if users_collection.find({'username': user}).limit(1).count() == 1:
-            userData = users_collection.find({'username': user})
-            for field in userData:
-                if field['username'] == user:
-                    if bcrypt.check_password_hash(field['password'], password):
-                        return userData
+        if users_collection.find_one({'username': user}) != None:
+            userData = users_collection.find_one({'username': user})
+            if bcrypt.check_password_hash(userData['password'], password):
+                 return userData
     else:
         flash('Username or password is invalid.')
         return render_template('signin.html', form=form)
@@ -79,25 +97,23 @@ def home():
         return render_template('home.html', form=form)
 
     elif request.method == 'POST':
-        if form.validate() == False:
+        if form.validate() == True:
+            userData = userAuth(form.username.data, form.password.data)
+            session['email'] = userData['email']
+            return redirect(url_for('myprofile'))
+        elif form.validate() == False:
             flash('All fields are required')
             return render_template('signin.html', form=form)
 
-        else:
-            userData = userAuth(form.username.data, form.password.data)
-            for field in userData:
-                session['email'] = field['email']
-            return redirect(url_for('profile'))
     else:
         flash('Your username/email or password is incorrect')
         return render_template('signin.html')
-                
-
+            
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     form = SignUp()
     if request.method == 'GET':
-        if 'email in session:':
+        if 'email' in session:
             return redirect(url_for('myprofile'))
     elif request.method == 'POST':
         if form.validate() == False:
@@ -126,7 +142,7 @@ def signup():
             msg = Message(
                 'Wisdom.ly account confirmation',
                 # sender
-                sender='aaron@thecompassmag.com',
+                sender='aaron@wisdom.ly',
                 # recipient
                 recipients=[form.email.data]
                 )
@@ -140,7 +156,7 @@ def signup():
 
             # redirects to custom profile based on session
             userData = users_collection.find({'email':session['email']})
-            return redirect(url_for('myprofile', userData = userData))
+            return redirect(url_for('myprofile'))
 
 
 @app.route('/signin', methods=['GET', 'POST'])
@@ -149,55 +165,55 @@ def signin():
     if request.method == 'GET':
         if 'email' in session:
             userData = users_collection.find({'email':session['email']})
-            return render_template('myprofile.html', userData = userData))
+            return redirect(url_for('myprofile'))
         else:
             return render_template('signin.html', form=form)
 
     elif request.method == 'POST':
-        if form.validate() == False:
+        if form.validate_on_submit():
+            userData = userAuth(form.username.data, form.password.data)
+            session.pop('email', None)
+            session['email'] = userData['email']
+            return redirect(url_for('myprofile'))
+        else:
             flash('All fields are required')
             return render_template('signin.html', form=form)
-        # checking if username is email
-        else:
-            userData = userAuth(form.username.data, form.password.data)
-            for field in userData:
-                session.pop('email', None)
-                session['email'] = field['email']
-            return redirect(url_for('myprofile', userData = userData))
-
+"""
 @app.route('/roundtable', methods=['GET', 'POST'])
 def roundtable():
     if request.method == 'GET':
-        return render_template('roundtable.html')
+        if user in session:
+            if client.wisdom.rt.find({''})
+                return render_template('roundtable.html')
 
-@app.route('/newseminar', methods=['GET', 'POST'])
+@app.route('/newroundtable', methods=['GET', 'POST'])
 def newseminar():
     form = CreateSeminar()
     if request.method == 'GET':
-        return render_template('newseminar.html', form=form)
+        return render_template('newroundtable.html', form=form)
     elif request.method == 'POST':
         if form.validate == False:
-            return render_template('signin.html', form=form)
-
-@app.route('/myprofile')
+            return render_template('newroundtable.html', form=form)
+        else:
+            newSession()
+"""
+@app.route('/myprofile', methods=['GET', 'POST'])
 def myprofile():
     try:
         userData = users_collection.find({'email':session['email']})
     except:
         return;
-    if 'email' not in session:
-        return redirect(url_for('signin'))
-
-    elif userData is None:
-        return redirect(url_for('signin'))
+    if 'email' not in session or 'email' is None:
+        return redirect(url_for('signin.html'))
     else:
-        return render_template('myprofile.html', userData=userData)
+        return render_template('myprofile.html', userData = userData)
 
+#if 'email' not in session or 'email' is None:
 @app.route('/user/<username>')
 def user(username):
     if 'email' not in session:
         return redirect(url_for('signin'))
-    else: 
+    else:
         if users_collection.find({'username':username}).limit(1).count() == 1:
             userProfile = users_collection.find({'username':username})
             return render_template('user.html', userProfile = userProfile)
@@ -208,8 +224,6 @@ def user(username):
 @app.route('/error404')
 def error404():
     return render_template('404.html')
-
-
 
 if __name__ == '__main__':
     # Bind to PORT if defined, otherwise default to 5000.

@@ -4,12 +4,15 @@
 <div id='login' style='float:right; margin:-25px 0 0 0; border:1px solid #dadada; padding:15px 5px 0 0px'>
 <form action="{{ url_for('signin') }}" method=post>
 
+    {{ form.hidden_tag() }}
+
 	{{ form.username.label }}
     {{ form.username }}
     {{ form.password.label }}
     {{ form.password }}
 
     {{ form.submit }}
+</form>
 </div>
 
 {% endblock %} 
