@@ -11,7 +11,7 @@ from flask import Flask, render_template, session, request, flash, url_for, redi
 import flask.views 
 
 # forms.py handles form creation and validation 
-from forms import ContactForm, SignUp, SignIn, CreateSeminar
+from forms import ContactForm, SignUp, SignIn, newrt
 
 # handles automatic mail service
 from flask.ext.mail import Message, Mail 
@@ -29,6 +29,11 @@ from flask_oauth import OAuth
 import pymongo 
 from pymongo import MongoClient
 
+# tornado web sockets with python
+import tornado
+import tornado.websocket
+import tornado.wsgi
+
 #openTok
 import OpenTokSDK
 
@@ -41,6 +46,9 @@ client = MongoClient('localhost')
 
 # set our users collection to users_collection
 users_collection = client.wisdom.users
+
+# set rtSessions collection to rts_collection
+rts_collection = client.wisdom.rtSessions
 
 #------------------------------------
 
@@ -148,10 +156,88 @@ def newSession():
 def newToken(session):
     token = opentok_sdk.generate_token(session.session_id)
     return token
-
-
-
+"""
 @app.route('/', methods=['GET','POST'])
+def index():
+    return flask.render_template('chat1.html')
+ 
+class ChatWebSocket(tornado.websocket.WebSocketHandler):
+    clients = []
+ 
+    def open(self):
+        ChatWebSocket.clients.append(self)
+ 
+    def on_message(self, message):
+        for client in ChatWebSocket.clients:
+            client.write_message(message)
+ 
+    def on_close(self):
+        ChatWebSocket.clients.remove(self)
+ 
+tornado_app = tornado.web.Application([
+    (r'/websocket', ChatWebSocket),
+    (r'.*', tornado.web.FallbackHandler, {'fallback': tornado.wsgi.WSGIContainer(app)})
+])
+ 
+tornado_app.listen(5000)
+tornado.ioloop.IOLoop.instance().start()
+"""
+@app.route('/')
+def inlineedit():
+    return render_template('inlineedit.html')
+class ChatWebSocket(tornado.websocket.WebSocketHandler):
+    clients = []
+ 
+    def open(self):
+        ChatWebSocket.clients.append(self)
+ 
+    def on_message(self, message):
+        for client in ChatWebSocket.clients:
+            client.write_message(message)
+ 
+    def on_close(self):
+        ChatWebSocket.clients.remove(self)
+ 
+tornado_app = tornado.web.Application([
+    (r'/websocket', ChatWebSocket),
+    (r'.*', tornado.web.FallbackHandler, {'fallback': tornado.wsgi.WSGIContainer(app)})
+])
+
+tornado_app.listen(5000)
+tornado.ioloop.IOLoop.instance().start()    
+
+@app.route('/bc', methods=['GET','POST'])
+def wisdom1():
+    if 'email' in session:
+        try:
+            userData = users_collection.find_one({'email':sessions['email']})
+        except:
+            return;
+    return render_template('chat.html')
+
+class ChatWebSocket(tornado.websocket.WebSocketHandler):
+    clients = []
+ 
+    def open(self):
+        ChatWebSocket.clients.append(self)
+ 
+    def on_message(self, message):
+        for client in ChatWebSocket.clients:
+            client.write_message(message)
+ 
+    def on_close(self):
+        ChatWebSocket.clients.remove(self)
+ 
+tornado_app = tornado.web.Application([
+    (r'/websocket', ChatWebSocket),
+    (r'.*', tornado.web.FallbackHandler, {'fallback': tornado.wsgi.WSGIContainer(app)})
+])
+ 
+tornado_app.listen(5000)
+tornado.ioloop.IOLoop.instance().start()
+
+
+@app.route('/wisdom1', methods=['GET','POST'])
 def home():
     form = SignIn()
     if request.method == 'GET':
@@ -253,27 +339,72 @@ def signin():
 
 @app.route('/signout', methods=['GET', 'POST'])
 def signout():
-    session.pop('email', None)
+    session.pop('email', None)                            
     flash('You were logged out')
     return redirect(url_for('home'))
-"""
-@app.route('/roundtable', methods=['GET', 'POST'])
-def roundtable():
-    if request.method == 'GET':
-        if user in session:
-            if client.wisdom.rt.find({''})
-                return render_template('roundtable.html')
 
+@app.route('/roundtable/<sessionID>', methods=['GET', 'POST'])
+def roundtable():
+    if 'email' in session or 'email' is None:
+        flash('You must be signed in to enter this page.')
+        redirect(url_for('signin'))
+    else:
+        if request.method == 'GET':
+            userData = users_collection.find_one({'email':session['email']})
+            currentSession = rts_collection.find_one({'sessionID':sessionID})
+
+            if len(currentSession['participants']) < 9:
+                if userData['_id'] in currentSession['participants']:
+                    render_template('roundtable.html')
+class ChatWebSocket(tornado.websocket.WebSocketHandler):
+    clients = []
+ 
+    def open(self):
+        ChatWebSocket.clients.append(self)
+ 
+    def on_message(self, message):
+        for client in ChatWebSocket.clients:
+            client.write_message(message)
+ 
+    def on_close(self):
+        ChatWebSocket.clients.remove(self)
+ 
+tornado_app = tornado.web.Application([
+    (r'/websocket', ChatWebSocket),
+    (r'.*', tornado.web.FallbackHandler, {'fallback': tornado.wsgi.WSGIContainer(app)})
+])
+ 
+tornado_app.listen(5000)
+tornado.ioloop.IOLoop.instance().start()
+
+
+
+"""
 @app.route('/newroundtable', methods=['GET', 'POST'])
-def newseminar():
-    form = CreateSeminar()
-    if request.method == 'GET':
-        return render_template('newroundtable.html', form=form)
-    elif request.method == 'POST':
-        if form.validate == False:
+def newroundtable():
+    form = newrt()
+    if 'email' in session or 'email' is None:
+        if request.method == 'GET':
             return render_template('newroundtable.html', form=form)
-        else:
-            newSession()
+        elif request.method == 'POST':
+            if form.validate == False:
+                flash('All fields are required')
+                return render_template('newroundtable.html', form=form)
+            else:
+                userData = users_collection.find_one({'email':session['email']})
+                session = newSession()
+                rts_collection.insert({ 'rt_id':datetime.datetime.now(),
+                                        'sessionID':session,
+                                        'title':form.title.data,
+                                        'description':form.description.data,
+                                        'expert_ID' : userData['_id'],
+                                        'createdAt' : datetime.datetime.now()
+                    })
+                return redirect(url_for('roundtable/' + str(_id))
+    #else:
+    #    flash('Sorry, you must be logged in to see this page.')
+    #    return redirect(url_for('signin'))
+
 """
 @app.route('/myprofile', methods=['GET', 'POST'])
 def myprofile():
@@ -299,10 +430,38 @@ def user(username):
             return render_template('user.html', userData = userData)
         else:
             return render_template('404.html')
+
+
 @app.errorhandler(404)
 def error404(e):
     return render_template('404.html'), 404
 
+
+@app.route('/chat')
+def chat():
+    return flask.render_template('chat.html')
+"""
+class ChatWebSocket(tornado.websocket.WebSocketHandler):
+    clients = []
+ 
+    def open(self):
+        ChatWebSocket.clients.append(self)
+ 
+    def on_message(self, message):
+        for client in ChatWebSocket.clients:
+            client.write_message(message)
+ 
+    def on_close(self):
+        ChatWebSocket.clients.remove(self)
+ 
+tornado_app = tornado.web.Application([
+    (r'/websocket', ChatWebSocket),
+    (r'.*', tornado.web.FallbackHandler, {'fallback': tornado.wsgi.WSGIContainer(app)})
+])
+ 
+tornado_app.listen(5000)
+tornado.ioloop.IOLoop.instance().start()
+"""
 if __name__ == '__main__':
     # Bind to PORT if defined, otherwise default to 5000.
     port = int(os.environ.get('PORT', 5000))

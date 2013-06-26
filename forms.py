@@ -1,4 +1,4 @@
-from flask.ext.wtf import Form, TextField, TextAreaField, SubmitField, validators, ValidationError, PasswordField
+from flask.ext.wtf import Form, TextField, TextAreaField, DateField, SubmitField, validators, ValidationError, PasswordField
 from flask.ext.wtf.html5 import NumberInput
 class ContactForm(Form):
   name = TextField("Name")
@@ -23,14 +23,8 @@ class resetPassword(Form):
     username = TextField("Email or Username")
     submit = SubmitField("Reset Password")
 
-class CreateSeminar(Form):
-	 seminarName = TextField("Seminar Name",  [validators.Required("Please enter a seminar name")])
-	 attendeeAmt = NumberInput("Number of attendees (10 max)")
-	 sessionTopic1 = TextField("Session Topic1")
-	 sessionTopic2 = TextField("Session Topic2")
-	 sessionTopic3 = TextField("Session Topic3")
-	 sessionTopic4 = TextField("Session Topic4")
-	 sessionTopic5 = TextField("Session Topic5")
-
-
+class newrt(Form):
+   title = TextField("Title",  [validators.Required("Please enter a roundtable title")])
+   description = TextField("Description",  [validators.Required("Please enter a roundtable description")])
+   submit = SubmitField("Create Roundtable")
 

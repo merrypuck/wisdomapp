@@ -1,0 +1,183 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='wcss/wisdom1.css') }}">
+  <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+  <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='wcss/jquery.sidr.light.css') }}">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='wcss/default.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='wcss/component.css') }}">
+<script src="{{ url_for('static', filename='wjs/modernizr.custom.js') }}"></script>
+      
+  </head>
+  <body class="cbp-spmenu-push">
+ 
+    <div id='header'><div id="discussion">
+    </div></div>
+    <div id='main-screen'>
+      <img id='main-stream' src='wineryfront.jpg' height='100%' width='100%' />
+      
+  <script>
+  $(function() {
+    $( ".view" ).draggable();
+    $( "#controlBox").draggable();
+    $( ".view" ).resizable({
+      maxHeight: 200,
+      maxWidth: 333.3,
+      minHeight: 100,
+      minWidth: 166.6,
+      aspectRatio: 5/3
+    });
+  });
+      
+      
+</script>
+  <!--<script>
+  $(function() {
+    $( ".view" ).dblclick(function() {
+      $( ".view" ).
+    });
+  });
+  </script>-->
+
+      <div class='view ui-widget-content' id='view1'>
+        <div class='player-control'></div>
+      </div>
+      <div class='view ui-widget-content' id='view2'>
+        <div class='player-control'></div>
+      </div>
+      <div id='controlBox'></div>
+    </div>
+
+
+
+
+<script src="http://www.appelsiini.net/download/jquery.jeditable.mini.js"></script>
+     <nav class="cbp-spmenu cbp-spmenu-vertical cbp-spmenu-left" id="cbp-spmenu-s1">
+      <h3>Agenda</h3>
+      <script>
+      $(document).ready(function() {
+     $(".edit").editable('/')
+     $('.edit').click(function() {
+      $('#button1').css('display','block')
+      $('#button1').click(function(){
+        $('#button1').css('display','none')
+      });
+     });
+ });
+      </script>
+        <input class="edit" id="st">Color</input>
+        <button onclick="send_message1()" id='button1' style='display:none'>Save</button>
+        <div id='qwerty'style='color:white'></div>
+
+
+
+    </nav>
+
+
+
+
+
+
+      <nav class="cbp-spmenu cbp-spmenu-vertical cbp-spmenu-right" id="cbp-spmenu-s2">
+      <h3>Menu</h3>
+      <a href="#">Sample</a>
+    </nav>
+
+      <nav class="cbp-spmenu cbp-spmenu-horizontal cbp-spmenu-bottom" id="cbp-spmenu-s4">
+      <h3>Menu</h3>
+      <script type="text/javascript">
+      ws = new WebSocket("ws://127.0.0.1:5000/websocket");
+      ws.onmessage = function(msg) {
+        var message = msg.data;
+        if (message.slice(0,3) === "<b>"){
+          $("#discussion").prepend("<p>" + message + "<p>");
+        }
+        else {
+          $("#qwerty").text( message );
+        }
+      };
+      ws.onerror = function(evt) {
+        alert("ERROR: "+evt.data);
+      };
+      function send_message1() {
+        msg = $("#st").val();
+        ws.send(msg);
+      }
+      function send_message2() {
+        msg = "<b>" + $("#nick").val() + ": </b>" + $("#message").val();
+        ws.send(msg);
+      }
+    </script> 
+
+      <a href="#"><form>
+      <dl>
+        <dt>Your nick:</dt><dd><input type="text" id="nick" value="nick"></dd>
+        <dt>Message:</dt><dd><textarea id="message"></textarea>
+      </dl>
+      <button onclick="send_message2(); return false;">foo</button>
+    </form>
+    <div id='tbox' style='height:100px;width:300px;border-radius:3px; border:2px solid black; position:relative; margin-left:200px;'>
+          
+    </div>
+  </a>
+    </nav>
+    
+    <div class="container">
+      <header class="clearfix">
+    
+      <div class="main">
+        <section>
+          <button id="showLeft" style="">Show/Hide Left Slide Menu</button>
+          <button id="showBottom" style="">Show/Hide Bottom Slide Menu</button>
+          <button id="showRightPush" style="">Show/Hide Right Push Menu</button>
+        </section>
+      </div>
+    </div>
+    <!-- Classie - class helper functions by @desandro https://github.com/desandro/classie -->
+    
+    <script src="{{ url_for('static', filename='wjs/classie.js') }}"></script>
+
+    <script>
+      var menuLeft = document.getElementById( 'cbp-spmenu-s1' ),
+        menuRight = document.getElementById( 'cbp-spmenu-s2' ),
+        menuBottom = document.getElementById( 'cbp-spmenu-s4' ),
+        showLeft = document.getElementById( 'showLeft' ),
+        showRight = document.getElementById( 'showRight' ),
+        showBottom = document.getElementById( 'showBottom' ),
+        showLeftPush = document.getElementById( 'showLeftPush' ),
+        showRightPush = document.getElementById( 'showRightPush' ),
+        body = document.body;
+
+      showLeft.onclick = function() {
+        classie.toggle( this, 'active' );
+        classie.toggle( menuLeft, 'cbp-spmenu-open' );
+        
+      };
+      showBottom.onclick = function() {
+        classie.toggle( this, 'active' );
+        classie.toggle( menuBottom, 'cbp-spmenu-open' );
+        
+      };
+      showRightPush.onclick = function() {
+        classie.toggle( this, 'active' );
+        classie.toggle( body, 'cbp-spmenu-push-toleft' );
+        classie.toggle( menuRight, 'cbp-spmenu-open' );
+        
+      };
+
+    
+    </script>
+ 
+      
+    </body>
+
+</html>
+
+
+
+
